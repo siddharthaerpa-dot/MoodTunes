@@ -138,34 +138,7 @@ MoodTunes/
 └── README.md
 ```
 
----
 
-## ▶️ How to Run
-
-### 1. Clone Repository
-
-```
-git clone https://github.com/your-username/MoodTunes.git
-cd MoodTunes
-```
-
-### 2. Install Dependencies
-
-```
-pip install flask opencv-python deepface numpy
-```
-
-### 3. Run Backend
-
-```
-python backend/app.py
-```
-
-### 4. Open App
-
-* Open `index.html` in browser
-
----
 
 ## 🎯 Future Enhancements
 
