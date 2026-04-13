@@ -1,30 +1,35 @@
-import SongCard from "../components/songcard";
+import { useState } from "react";
 
-function PlaylistView({ playlist, setPage }) {
-  if (!playlist) return null;
+function Playlists() {
+  const [name, setName] = useState("");
+  const [lists, setLists] = useState([]);
+
+  const create = () => {
+    if (!name) return;
+    setLists([...lists, name]);
+    setName("");
+  };
 
   return (
     <div className="p-6">
-      <button
-        onClick={() => setPage("playlists")}
-        className="mb-4"
-      >
-        ⬅ Back
+      <input
+        value={name}
+        onChange={(e) => setName(e.target.value)}
+        placeholder="Playlist name"
+        className="p-2 text-black"
+      />
+
+      <button onClick={create} className="ml-2 bg-green-500 px-3 py-1 rounded">
+        Create
       </button>
 
-      <h2 className="text-2xl mb-4">🎶 {playlist.name}</h2>
-
-      {playlist.songs.length === 0 && (
-        <p className="text-gray-400">No songs yet 😔</p>
-      )}
-
-      <div className="space-y-4">
-        {playlist.songs.map((song, i) => (
-          <SongCard key={i} song={song} />
+      <ul className="mt-4">
+        {lists.map((l, i) => (
+          <li key={i}>📁 {l}</li>
         ))}
-      </div>
+      </ul>
     </div>
   );
 }
 
-export default PlaylistView;
+export default Playlists;
