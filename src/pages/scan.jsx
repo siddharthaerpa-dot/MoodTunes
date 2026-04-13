@@ -1,156 +1,63 @@
-import { useRef, useState, useEffect } from "react";
+import { useRef, useState } from "react";
 
-function Scan() {
+function Scan({ setSong }) {
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
-  const streamRef = useRef(null);
-
-  const [mood, setMood] = useState("");
   const [scanned, setScanned] = useState(false);
 
-  // 📸 START CAMERA + AUTO SCAN
-  const startCamera = async () => {
-    try {
-      stopCamera(); // reset camera first
+  const songs = [
+    { mood: "happy", url: "https://open.spotify.com/embed/track/0VjIjW4GlUZAMYd2vXMi3b" },
+    { mood: "sad", url: "https://open.spotify.com/embed/track/3AJwUDP919kvQ9QcozQPxg" },
+    { mood: "neutral", url: "https://open.spotify.com/embed/track/2VxeLyX666F8uXCJ0dZF8B" },
+    { mood: "angry", url: "https://open.spotify.com/embed/track/6habFhsOp2NvshLv26DqMb" },
+  ];
 
-      const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-      videoRef.current.srcObject = stream;
-      streamRef.current = stream;
+  const start = async () => {
+    const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+    videoRef.current.srcObject = stream;
+    videoRef.current.play();
 
-      setScanned(false);
-
-      // 🔥 AUTO SCAN AFTER 2 SEC
-      setTimeout(() => {
-        captureAndDetect();
-      }, 2000);
-
-    } catch {
-      alert("Camera permission needed");
-    }
+    setTimeout(scan, 2000);
   };
 
-  // 📸 CAPTURE + DETECT
-  const captureAndDetect = async () => {
-    if (scanned) return;
+  const scan = () => {
+    // 🔥 Fake mood (backend connect cheyyali if needed)
+    const moods = ["happy", "sad", "neutral", "angry"];
+    const mood = moods[Math.floor(Math.random() * moods.length)];
 
-    const canvas = canvasRef.current;
-    const video = videoRef.current;
+    const filtered = songs.filter((s) => s.mood === mood);
+    const random = filtered[Math.floor(Math.random() * filtered.length)];
 
-    if (!video.videoWidth) return; // safety
+    setSong(random);
 
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
+    setScanned(true);
 
-    const ctx = canvas.getContext("2d");
-    ctx.drawImage(video, 0, 0);
-
-    const image = canvas.toDataURL("image/jpeg");
-
-    try {
-      const res = await fetch("http://127.0.0.1:5000/detect", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ image }),
-      });
-
-      const data = await res.json();
-
-      let detectedMood = data.mood?.toLowerCase().trim();
-
-      // 🔥 EMOTION MAPPING
-      if (detectedMood === "surprise") detectedMood = "happy";
-      if (detectedMood === "fear") detectedMood = "sad";
-      if (detectedMood === "disgust") detectedMood = "angry";
-
-      setMood(detectedMood);
-      setScanned(true);
-
-      // 🔥 MOOD → QUERY
-      const moodKeywords = {
-        happy: "happy songs",
-        sad: "sad songs",
-        neutral: "chill songs",
-        angry: "workout songs",
-      };
-
-      const extras = ["mix", "top", "viral", "best"];
-      const extra = extras[Math.floor(Math.random() * extras.length)];
-
-      const query = `${moodKeywords[detectedMood]} ${extra}`;
-
-      const url = `https://open.spotify.com/search/${encodeURIComponent(query)}`;
-
-      stopCamera();
-
-      // 🔥 AUTO OPEN NEW TAB
-      window.open(url, "_blank");
-
-    } catch (err) {
-      console.log(err);
-      alert("Backend error");
-    }
+    // stop cam
+    videoRef.current.srcObject.getTracks().forEach((t) => t.stop());
   };
-
-  // ❌ STOP CAMERA
-  const stopCamera = () => {
-    if (streamRef.current) {
-      streamRef.current.getTracks().forEach((track) => track.stop());
-      videoRef.current.srcObject = null;
-      streamRef.current = null;
-    }
-  };
-
-  // 🔁 SCAN AGAIN (AUTO)
-  const resetScan = () => {
-    setMood("");
-    setScanned(false);
-
-    // 🔥 DIRECT AUTO RESTART
-    startCamera();
-  };
-
-  useEffect(() => {
-    return () => stopCamera();
-  }, []);
 
   return (
-    <div className="flex flex-col items-center justify-center h-full p-6">
+    <div className="flex flex-col items-center p-6">
 
-      <div className="glass p-6 w-[320px] text-center">
-
-        <h2 className="text-xl font-bold mb-4">📸 Mood Scan</h2>
-
-        {!scanned && (
-          <video ref={videoRef} autoPlay className="rounded mb-4" />
-        )}
-
-        <canvas ref={canvasRef} className="hidden" />
-
-        {!scanned ? (
-          <button
-            onClick={startCamera}
-            className="bg-green-500 px-4 py-2 rounded"
-          >
+      {!scanned && (
+        <>
+          <video ref={videoRef} className="w-72 rounded" />
+          <button onClick={start} className="mt-4 bg-green-500 px-4 py-2 rounded">
             Start Scan
           </button>
-        ) : (
-          <>
-            <p className="mt-2 mb-2">
-              Mood: <b>{mood}</b>
-            </p>
+        </>
+      )}
 
-            <button
-              onClick={resetScan}
-              className="bg-blue-500 px-4 py-2 rounded"
-            >
-              Scan Again
-            </button>
-          </>
-        )}
+      {scanned && (
+        <button onClick={() => {
+          setScanned(false);
+          start();
+        }} className="bg-blue-500 px-4 py-2 rounded">
+          Scan Again
+        </button>
+      )}
 
-      </div>
+      <canvas ref={canvasRef} className="hidden" />
     </div>
   );
 }
