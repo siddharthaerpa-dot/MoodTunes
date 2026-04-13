@@ -2,21 +2,31 @@
 @tailwind components;
 @tailwind utilities;
 
-/* 🌈 BACKGROUND */
+/* GLOBAL RESET */
 body {
-  background: linear-gradient(135deg, #0f172a, #1e293b, #020617);
+  margin: 0;
+  font-family: sans-serif;
+  background: #0f0f0f;
   color: white;
 }
 
-/* 🧊 GLASS EFFECT */
+/* GLASS EFFECT */
 .glass {
-  background: rgba(255, 255, 255, 0.08);
-  backdrop-filter: blur(15px);
-  border-radius: 20px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
+  border-radius: 16px;
 }
 
-/* ✨ SMOOTH TRANSITIONS */
-* {
-  transition: all 0.3s ease;
+/* SCAN ANIMATION */
+@keyframes scan {
+  0% {
+    transform: translateY(-100%);
+  }
+  100% {
+    transform: translateY(300%);
+  }
+}
+
+.animate-scan {
+  animation: scan 2s linear infinite;
 }
